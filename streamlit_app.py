@@ -6,7 +6,6 @@ import great_expectations as gx
 import io
 st.title("Assignment 1")
 st.subheader("EDA on Hufty Bikes")
-
 # Data Validation
 # 1. Df info
 dftr = gx.read_excel("KPMG_VI_New_raw_data_update_final.xlsx",
@@ -21,12 +20,10 @@ dfnc = gx.read_excel("./KPMG_VI_New_raw_data_update_final.xlsx",
 st.subheader("Dataset Information")
 df_trad = pd.merge(dftr, dfca, on='customer_id', how='outer')
 df = pd.merge(df_trad, dfcd, on='customer_id', how='outer')
-st.write("Abstracted info of the dataset")
-buffer = io.StringIO()
-df.info(buf=buffer)
-s = buffer.getvalue()
-st.text(s.split("Column")[1])
-df.dropna(inplace=True)
+st.write("Unique Transaction IDs - ", len(df))
+# df.dropna(inplace=True)
+# a = pd.DataFrame(df.describe())
+# st.dataframe(a)
 
 # 2. GE validations
 st.subheader("Data validation with great expectation")
@@ -136,5 +133,5 @@ st.plotly_chart(fig7, use_container_width=True)
 profit_age_range = pd.DataFrame(
     df.groupby("product_class").sum()["profit"])
 st.dataframe(profit_age_range)
-fig8 = px.pie(profit_age_range, names=['medium','low','high'], values='profit')
+fig8 = px.pie(profit_age_range, names=['high','low','medium'], values='profit',title="Product class revenue")
 st.plotly_chart(fig8, use_container_width=True)
