@@ -77,11 +77,16 @@ st.write("Insight - Although the units sold by the brands are almost equal, Sole
 # 3. Customer - Demographic attributes that do not effect sales
 st.subheader("3. Customer attributes - Revenue")
 st.write("3.1 Owning cars")
-st.plotly_chart(px.pie(df, names="owns_car", values="list_price", height=400))
+df_t1 = df.dropna(subset="owns_car")
+st.plotly_chart(px.pie(df_t1, names="owns_car",
+                values="list_price", height=400))
 st.write("3.2 Gender")
-st.plotly_chart(px.pie(df, names="gender", values="list_price", height=400))
+df_t2 = df[df['gender'] != "U"]
+df_t2 = df_t2.dropna(subset="gender")
+st.plotly_chart(px.pie(df_t2, names="gender", values="list_price", height=400))
 st.write("3.3 Online / Offline channel")
-st.plotly_chart(px.pie(df, names="online_order",
+df_t3 = df.dropna(subset="online_order")
+st.plotly_chart(px.pie(df_t3, names="online_order",
                 values="list_price", height=400))
 st.write("Insights - These customer attributes do not affect sales. Gender, Online/Offline Channel, Owning cars")
 
@@ -122,8 +127,9 @@ fig7 = px.histogram(df, y='customer_id',
 st.plotly_chart(fig7, use_container_width=True)
 
 st.write("5.4 Customer age")
-bins = [0, 18, 35, 48, 60,100]
-labels = ['Teen (0-18)', 'Young Adults (18-35)', 'Adults (35-48)', 'Adults (48-60)', 'Old (60+)']
+bins = [0, 18, 35, 48, 60, 100]
+labels = ['Teen (0-18)', 'Young Adults (18-35)',
+          'Adults (35-48)', 'Adults (48-60)', 'Old (60+)']
 df['age_ranges'] = pd.cut(df['age'], bins=bins, labels=labels, right=False)
 
 fig7 = px.histogram(df, y='transaction_id',
@@ -133,5 +139,6 @@ st.plotly_chart(fig7, use_container_width=True)
 profit_age_range = pd.DataFrame(
     df.groupby("product_class").sum()["profit"])
 st.dataframe(profit_age_range)
-fig8 = px.pie(profit_age_range, names=['high','low','medium'], values='profit',title="Product class revenue")
+fig8 = px.pie(profit_age_range, names=[
+              'high', 'low', 'medium'], values='profit', title="Product class revenue")
 st.plotly_chart(fig8, use_container_width=True)
