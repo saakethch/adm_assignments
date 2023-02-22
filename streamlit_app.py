@@ -1,144 +1,223 @@
-# Imports
 import streamlit as st
+import plotly.graph_objs as go
 import pandas as pd
-import plotly.express as px
-import great_expectations as gx
-import io
-st.title("Assignment 1")
-st.subheader("EDA on Hufty Bikes")
-# Data Validation
-# 1. Df info
-dftr = gx.read_excel("KPMG_VI_New_raw_data_update_final.xlsx",
+import numpy as np
+import datetime as dt
+
+# The code below is for the title and logo for this page.
+st.set_page_config(page_title="Cohort Analysis on the Bikes dataset", page_icon="🚲")
+
+st.image(
+    "https://emojipedia-us.s3.dualstack.us-west-1.amazonaws.com/thumbs/240/apple/325/bicycle_1f6b2.png",
+    width=160,
+)
+
+st.title("Cohort Analysis → `Bikes` dataset")
+
+st.write("")
+
+st.markdown(
+    """
+    This demo is inspired by this [Cohort Analysis Tutorial](https://github.com/maladeep/cohort-retention-rate-analysis-in-python).
+"""
+)
+
+with st.expander("About this app"):
+
+    st.write("")
+
+    st.markdown(
+        """
+    This dataset comes from the hypothetical `Sprocket Central Pty Ltd`, a medium size bikes & cycling accessories organisation.
+    The data spans from `January 1, 2017` to `December 31, 2017` and is available in CSV format (downloadable [here](https://www.kaggle.com/datasets/archit9406/customer-transaction-dataset)).
+    Each row in the dataset contains information about an individual bike purchase:
+    - Who bought it
+    - How much they paid
+    - The bike's `brand` and `product line`
+    - Its `class` and `size`
+    - What day the purchase happened
+    - The day the product was first sold
+    """
+    )
+
+    st.write("")
+
+    st.markdown(
+        """
+    The underlying code groups those purchases into cohorts and calculates the `retention rate` (split by month) so that one can answer the question:
+    *if I'm making monthly changes to my store to get people to come back and buy more bikes, are those changes working?"*
+    These cohorts are then visualized and interpreted through a heatmap [powered by Plotly](https://plotly.com/python/).
+    """
+    )
+
+    st.write("")
+
+# A function that will parse the date Time based cohort:  1 day of month
+def get_month(x):
+    return dt.datetime(x.year, x.month, 1)
+
+
+@st.experimental_memo
+def load_data():
+
+    # Load data
+    transaction_df = pd.read_excel("KPMG_VI_New_raw_data_update_final.xlsx",
                      sheet_name="Transactions", skiprows=1)
-dfca = gx.read_excel("KPMG_VI_New_raw_data_update_final.xlsx",
-                     sheet_name="CustomerAddress", skiprows=1)
-dfcd = gx.read_excel("KPMG_VI_New_raw_data_update_final.xlsx",
-                     sheet_name="CustomerDemographic")
-dfnc = gx.read_excel("./KPMG_VI_New_raw_data_update_final.xlsx",
-                     sheet_name="NewCustomerList", skiprows=1)
 
-st.subheader("Dataset Information")
-df_trad = pd.merge(dftr, dfca, on='customer_id', how='outer')
-df = pd.merge(df_trad, dfcd, on='customer_id', how='outer')
-st.write("Unique Transaction IDs - ", len(df))
-# df.dropna(inplace=True)
-# a = pd.DataFrame(df.describe())
-# st.dataframe(a)
+    # Process data
+    transaction_df = transaction_df.replace(" ", np.NaN)
+    transaction_df = transaction_df.fillna(transaction_df.mean())
+    transaction_df["TransactionMonth"] = transaction_df["transaction_date"].apply(
+        get_month
+    )
+    transaction_df["TransactionYear"] = transaction_df["transaction_date"].dt.year
+    transaction_df["TransactionMonth"] = transaction_df["transaction_date"].dt.month
+    for col in transaction_df.columns:
+        if transaction_df[col].dtype == "object":
+            transaction_df[col] = transaction_df[col].fillna(
+                transaction_df[col].value_counts().index[0]
+            )
 
-# 2. GE validations
-st.subheader("Data validation with great expectation")
+    # Create transaction_date column based on month and store in TransactionMonth
+    transaction_df["TransactionMonth"] = transaction_df["transaction_date"].apply(
+        get_month
+    )
+    # Grouping by customer_id and select the InvoiceMonth value
+    grouping = transaction_df.groupby("customer_id")["TransactionMonth"]
+    # Assigning a minimum InvoiceMonth value to the dataset
+    transaction_df["CohortMonth"] = grouping.transform("min")
 
-tid_val = dftr.expect_column_values_to_be_unique("transaction_id")
-tdate_val = dftr.expect_column_values_to_be_of_type(
-    column="transaction_date", type_="datetime64")
-torders_val = dftr.expect_column_values_to_not_be_null(
-    column=['order_status', 'brand'])
-tprice = dftr.expect_column_values_to_be_between(
-    column="list_price", min_value=10, max_value=2100)
+    return transaction_df
 
-st.write("1. Unique IDs check on transaction_id")
-st.write("Unexpected_count :", tid_val.result["unexpected_count"])
 
-st.write("2. Dates validations")
-st.write(tdate_val.result)
+transaction_df = load_data()
 
-st.write("3. Null values check on order_status and brand")
-st.write("Unexpected_count :", torders_val.result["unexpected_count"])
+with st.expander("Show the `Bikes` dataframe"):
+    st.write(transaction_df)
 
-st.write("4. Prices are relavant and in between a tight range of 10-2100 $USD")
-st.write("Unexpected_count :", tprice.result["unexpected_count"])
 
-# Data Analysis
+def get_date_int(df, column):
+    year = df[column].dt.year
+    month = df[column].dt.month
+    day = df[column].dt.day
+    return year, month, day
 
-# 1. Brand - Units sold
-st.subheader("1. Brand - Units sold")
-fig1 = px.histogram(df, x="brand", y="transaction_id",
-                    labels=dict(x="Number of customers"),
-                    height=500,
-                    histfunc="count"
-                    )
-st.plotly_chart(fig1, use_container_width=True)
 
-# 2. Brand - Profit generated
-st.subheader("2. Brand - Profits Contributed in $USD")
-df["profit"] = df["list_price"] - df["standard_cost"]
-profit_sum = pd.DataFrame(df.groupby("brand").sum()["profit"])
-fig2 = px.pie(df, names="brand",
-              values="profit",
-              height=500,
-              hole=0.3,
-              )
-st.plotly_chart(fig2, use_container_width=True)
-st.dataframe(profit_sum)
-st.write("Total profit generated - ",
-         format(int(profit_sum["profit"].sum()), ","), "$")
-st.write("Insight - Although the units sold by the brands are almost equal, Solex and WeAreA2B together contribute 47% of the total profit generated.")
+# Getting the integers for date parts from the `InvoiceDay` column
+transcation_year, transaction_month, _ = get_date_int(
+    transaction_df, "TransactionMonth"
+)
+# Getting the integers for date parts from the `CohortDay` column
+cohort_year, cohort_month, _ = get_date_int(transaction_df, "CohortMonth")
+#  Get the  difference in years
+years_diff = transcation_year - cohort_year
+# Calculate difference in months
+months_diff = transaction_month - cohort_month
 
-# 3. Customer - Demographic attributes that do not effect sales
-st.subheader("3. Customer attributes - Revenue")
-st.write("3.1 Owning cars")
-df_t1 = df.dropna(subset="owns_car")
-st.plotly_chart(px.pie(df_t1, names="owns_car",
-                values="list_price", height=400))
-st.write("3.2 Gender")
-df_t2 = df[df['gender'] != "U"]
-df_t2 = df_t2.dropna(subset="gender")
-st.plotly_chart(px.pie(df_t2, names="gender", values="list_price", height=400))
-st.write("3.3 Online / Offline channel")
-df_t3 = df.dropna(subset="online_order")
-st.plotly_chart(px.pie(df_t3, names="online_order",
-                values="list_price", height=400))
-st.write("Insights - These customer attributes do not affect sales. Gender, Online/Offline Channel, Owning cars")
+# Extract the difference in months from all previous values "+1" in addeded at the end so that first month is marked as 1 instead of 0 for easier interpretation. """
+transaction_df["CohortIndex"] = years_diff * 12 + months_diff + 1
 
-# 4. Customer - Demographic attributes that effect sales
-st.subheader("4. Customer location analysis")
-profit_old = pd.DataFrame(
-    df.groupby("state").sum()["past_3_years_bike_related_purchases"])
-# st.dataframe(profit_old)
-st.plotly_chart(px.pie(profit_old, title="Existing customer data", names=[
-                "NSW", "QLD", "VIC", "Victoria", "New South Wales"], values="past_3_years_bike_related_purchases"))
+dtypes = transaction_df.dtypes.astype(str)
+# Show dtypes
+# dtypes
 
-profit_new = pd.DataFrame(
-    dfnc.groupby("state").sum()["past_3_years_bike_related_purchases"])
-# st.dataframe(profit_new)
-st.plotly_chart(px.pie(profit_new, names=[
-                "NSW", "QLD", "VIC"], values="past_3_years_bike_related_purchases", title="New customer data"))
-st.write("Insight - New customers are mostly in the same region as the old customers validating that the locations are targeted accurately for the buisiness")
+transaction_df_new_slider_01 = transaction_df[["brand", "product_line"]]
+new_slider_01 = [col for col in transaction_df_new_slider_01]
 
-st.subheader("5. Customer class & Product class sales analysis")
-st.write("5.1 Wealth segment")
-profit_job_title = pd.DataFrame(
-    df.groupby("wealth_segment").sum()["list_price"])
-st.dataframe(profit_job_title)
-st.plotly_chart(px.pie(profit_job_title, names=[
-                "Affluent Customer", "High Net Worth", "Mass Customer"], values="list_price"))
+transaction_df_new_slider_02 = transaction_df[["list_price", "standard_cost"]]
+new_slider_02 = [col for col in transaction_df_new_slider_02]
 
-st.write("5.2 Product line sales")
-fig6 = px.histogram(df, x="product_line", y="transaction_id",
-                    labels=dict(x="Number of customers"),
-                    height=500,
-                    histfunc="count"
-                    )
-st.plotly_chart(fig6, use_container_width=True)
+st.write("")
 
-st.write("5.3 Customer wealth (based on residance area)")
-fig7 = px.histogram(df, y='customer_id',
-                    x='property_valuation', histfunc="count")
-st.plotly_chart(fig7, use_container_width=True)
+cole, col1, cole, col2, cole = st.columns([0.1, 1, 0.05, 1, 0.1])
 
-st.write("5.4 Customer age")
-bins = [0, 18, 35, 48, 60, 100]
-labels = ['Teen (0-18)', 'Young Adults (18-35)',
-          'Adults (35-48)', 'Adults (48-60)', 'Old (60+)']
-df['age_ranges'] = pd.cut(df['age'], bins=bins, labels=labels, right=False)
+with col1:
 
-fig7 = px.histogram(df, y='transaction_id',
-                    x='age_ranges', histfunc="count")
-st.plotly_chart(fig7, use_container_width=True)
+    MetricSlider01 = st.selectbox("Pick your 1st metric", new_slider_01)
 
-profit_age_range = pd.DataFrame(
-    df.groupby("product_class").sum()["profit"])
-st.dataframe(profit_age_range)
-fig8 = px.pie(profit_age_range, names=[
-              'high', 'low', 'medium'], values='profit', title="Product class revenue")
-st.plotly_chart(fig8, use_container_width=True)
+    MetricSlider02 = st.selectbox("Pick your 2nd metric", new_slider_02, index=1)
+
+    st.write("")
+
+with col2:
+
+    if MetricSlider01 == "brand":
+        # col_one_list = transaction_df_new["brand"].tolist()
+        col_one_list = transaction_df_new_slider_01["brand"].drop_duplicates().tolist()
+        multiselect = st.multiselect(
+            "Select the value(s)", col_one_list, ["Solex", "Trek Bicycles"]
+        )
+        transaction_df = transaction_df[transaction_df["brand"].isin(multiselect)]
+
+    elif MetricSlider01 == "product_line":
+        col_one_list = (
+            transaction_df_new_slider_01["product_line"].drop_duplicates().tolist()
+        )
+        multiselect = st.multiselect(
+            "Select the value(s)", col_one_list, ["Standard", "Road"]
+        )
+        transaction_df = transaction_df[
+            transaction_df["product_line"].isin(multiselect)
+        ]
+
+    if MetricSlider02 == "list_price":
+        list_price_slider = st.slider(
+            "List price (in $)", step=500, min_value=12, max_value=2091
+        )
+        transaction_df = transaction_df[
+            transaction_df["list_price"] > list_price_slider
+        ]
+
+    elif MetricSlider02 == "standard_cost":
+        standard_cost_slider = st.slider(
+            "Standard cost (in $)", step=500, min_value=7, max_value=1759
+        )
+        transaction_df = transaction_df[
+            transaction_df["list_price"] > standard_cost_slider
+        ]
+
+try:
+
+    # Counting daily active user from each chort
+    grouping = transaction_df.groupby(["CohortMonth", "CohortIndex"])
+    # Counting number of unique customer Id's falling in each group of CohortMonth and CohortIndex
+    cohort_data = grouping["customer_id"].apply(pd.Series.nunique)
+    cohort_data = cohort_data.reset_index()
+    # Assigning column names to the dataframe created above
+    cohort_counts = cohort_data.pivot(
+        index="CohortMonth", columns="CohortIndex", values="customer_id"
+    )
+
+    cohort_sizes = cohort_counts.iloc[:, 0]
+    retention = cohort_counts.divide(cohort_sizes, axis=0)
+    # Coverting the retention rate into percentage and Rounding off.
+    retention = retention.round(3) * 100
+    retention.index = retention.index.strftime("%Y-%m")
+
+    # Plotting the retention rate
+    fig = go.Figure()
+
+    fig.add_heatmap(
+        # x=retention.columns, y=retention.index, z=retention, colorscale="cividis"
+        x=retention.columns,
+        y=retention.index,
+        z=retention,
+        # Best
+        # colorscale="Aggrnyl",
+        colorscale="Bluyl",
+    )
+
+    fig.update_layout(title_text="Monthly cohorts showing retention rates", title_x=0.5)
+    fig.layout.xaxis.title = "Cohort Group"
+    fig.layout.yaxis.title = "Cohort Period"
+    fig["layout"]["title"]["font"] = dict(size=25)
+    fig.layout.width = 750
+    fig.layout.height = 750
+    fig.layout.xaxis.tickvals = retention.columns
+    fig.layout.yaxis.tickvals = retention.index
+    fig.layout.plot_bgcolor = "#efefef"  # Set the background color to white
+    fig.layout.margin.b = 100
+    fig
+
+except IndexError:
+    st.warning("This is throwing an exception, bear with us!")
