@@ -5,6 +5,7 @@
 import json
 import altair as alt
 import pandas as pd
+import snowflake as sf
 from snowflake.snowpark.session import Session
 from snowflake.snowpark.functions import col
 import streamlit as st
@@ -30,7 +31,7 @@ def load_data():
     return historical_data.to_pandas(), df_last_six_months_allocations, df_last_six_months_roi, df_last_months_allocations
 
 # Streamlit config
-st.set_page_config("SportsCo Ad Spend Optimizer", APP_ICON_URL, "centered")
+# st.set_page_config("SportsCo Ad Spend Optimizer", APP_ICON_URL, "centered")
 st.write("<style>[data-testid='stMetricLabel'] {min-height: 0.5rem !important}</style>", unsafe_allow_html=True)
 st.image(APP_ICON_URL, width=80)
 st.title("SportsCo Ad Spend Optimizer")
@@ -52,7 +53,7 @@ for channel, default, col in zip(channels, df_last_months_allocations["BUDGET"].
 # Function to call "predict_roi" UDF that uses the pre-trained model for inference
 # Note: Both the model training and UDF registration is done in Snowpark_For_Python.ipynb
 st.header("Predicted revenue")
-@st.experimental_memo(show_spinner=False)
+@st.cache_data(show_spinner=False)
 def predict(budgets):
     df_predicted_roi = session.sql(f"SELECT predict_roi(array_construct({budgets[0]*1000},{budgets[1]*1000},{budgets[2]*1000},{budgets[3]*1000})) as PREDICTED_ROI").to_pandas()
     predicted_roi, last_month_roi = df_predicted_roi["PREDICTED_ROI"].values[0] / 100000, df_last_six_months_roi["ROI"].iloc[-1]
