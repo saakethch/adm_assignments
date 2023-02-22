@@ -1,0 +1,9 @@
+{
+  "account"   : "rn99162",
+  "user"      : "saaketh",
+  "password"  : "Saaketh12#",
+  "role"      : "ACCOUNTADMIN",
+  "warehouse" : "COMPUTE_WH",
+  "database"  : "ROI",
+  "schema"    : "PUBLIC"
+}
