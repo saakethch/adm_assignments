@@ -5,7 +5,6 @@
 import json
 import altair as alt
 import pandas as pd
-import snowflake as sf
 from snowflake.snowpark.session import Session
 from snowflake.snowpark.functions import col
 import streamlit as st
