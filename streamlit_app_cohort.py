@@ -4,15 +4,8 @@ import pandas as pd
 import numpy as np
 import datetime as dt
 
-# The code below is for the title and logo for this page.
-# st.set_page_config(page_title="Cohort Analysis on the Bikes dataset", page_icon="🚲")
-st.title("hllo")
-st.image(
-    "https://emojipedia-us.s3.dualstack.us-west-1.amazonaws.com/thumbs/240/apple/325/bicycle_1f6b2.png",
-    width=160,
-)
 
-st.title("Cohort Analysis → `Bikes` dataset")
+st.title("Cohort Analysis Bikes dataset")
 
 st.write("")
 
@@ -22,46 +15,18 @@ st.markdown(
 """
 )
 
-with st.expander("About this app"):
-
-    st.write("")
-
-    st.markdown(
-        """
-    This dataset comes from the hypothetical `Sprocket Central Pty Ltd`, a medium size bikes & cycling accessories organisation.
-    The data spans from `January 1, 2017` to `December 31, 2017` and is available in CSV format (downloadable [here](https://www.kaggle.com/datasets/archit9406/customer-transaction-dataset)).
-    Each row in the dataset contains information about an individual bike purchase:
-    - Who bought it
-    - How much they paid
-    - The bike's `brand` and `product line`
-    - Its `class` and `size`
-    - What day the purchase happened
-    - The day the product was first sold
-    """
-    )
-
-    st.write("")
-
-    st.markdown(
-        """
-    The underlying code groups those purchases into cohorts and calculates the `retention rate` (split by month) so that one can answer the question:
-    *if I'm making monthly changes to my store to get people to come back and buy more bikes, are those changes working?"*
-    These cohorts are then visualized and interpreted through a heatmap [powered by Plotly](https://plotly.com/python/).
-    """
-    )
-
-    st.write("")
 
 # A function that will parse the date Time based cohort:  1 day of month
 def get_month(x):
-    return dt.datetime(x.year, x.month, 1)
+    x = x.split("-")
+    return dt.datetime(int(x[0]), int(x[1]), 1)
 
 
-@st.experimental_memo
+@st.cache_data
 def load_data():
 
     # Load data
-    transaction_df = pd.read_csv("snowflake_ROI\kpmg_transactions.csv")
+    transaction_df = pd.read_csv("kpmg_transactions.csv")
 
     # Process data
     transaction_df = transaction_df.replace(" ", np.NaN)
@@ -69,8 +34,8 @@ def load_data():
     transaction_df["TransactionMonth"] = transaction_df["transaction_date"].apply(
         get_month
     )
-    transaction_df["TransactionYear"] = transaction_df["transaction_date"].dt.year
-    transaction_df["TransactionMonth"] = transaction_df["transaction_date"].dt.month
+    transaction_df["TransactionYear"] = transaction_df["TransactionMonth"].dt.year
+    transaction_df["TransactionMonth"] = transaction_df["TransactionMonth"].dt.month
     for col in transaction_df.columns:
         if transaction_df[col].dtype == "object":
             transaction_df[col] = transaction_df[col].fillna(
@@ -83,7 +48,6 @@ def load_data():
     )
     # Grouping by customer_id and select the InvoiceMonth value
     grouping = transaction_df.groupby("customer_id")["TransactionMonth"]
-    # Assigning a minimum InvoiceMonth value to the dataset
     transaction_df["CohortMonth"] = grouping.transform("min")
 
     return transaction_df
@@ -215,8 +179,57 @@ try:
     fig.layout.xaxis.tickvals = retention.columns
     fig.layout.yaxis.tickvals = retention.index
     fig.layout.plot_bgcolor = "#efefef"  # Set the background color to white
+    # fig.layout.text = "num"
     fig.layout.margin.b = 100
     fig
 
 except IndexError:
-    st.warning("This is throwing an exception, bear with us!")
+    st.warning("error")
+
+
+try:
+
+    # Counting daily active user from each chort
+    grouping = transaction_df.groupby(["CohortMonth", "CohortIndex"])
+    # Counting number of unique customer Id's falling in each group of CohortMonth and CohortIndex
+    cohort_data = grouping["customer_id"].apply(pd.Series.nunique)
+    cohort_data = cohort_data.reset_index()
+    # Assigning column names to the dataframe created above
+    cohort_counts = cohort_data.pivot(
+        index="CohortMonth", columns="CohortIndex", values="customer_id"
+    )
+
+    cohort_sizes = cohort_counts.iloc[:, 0]
+    retention = cohort_counts.divide(cohort_sizes, axis=0)
+    # Coverting the retention rate into percentage and Rounding off.
+    retention = retention.round(3) * 100
+    retention.index = retention.index.strftime("%Y-%m")
+
+    # Plotting the retention rate
+    fig = go.Figure()
+
+    fig.add_heatmap(
+        # x=retention.columns, y=retention.index, z=retention, colorscale="cividis"
+        x=retention.columns,
+        y=retention.index,
+        z=retention,
+        # Best
+        # colorscale="Aggrnyl",
+        colorscale="Bluyl",
+    )
+
+    fig.update_layout(title_text="Monthly cohorts showing retention rates", title_x=0.5)
+    fig.layout.xaxis.title = "Cohort Group"
+    fig.layout.yaxis.title = "Cohort Period"
+    fig["layout"]["title"]["font"] = dict(size=25)
+    fig.layout.width = 750
+    fig.layout.height = 750
+    fig.layout.xaxis.tickvals = retention.columns
+    fig.layout.yaxis.tickvals = retention.index
+    fig.layout.plot_bgcolor = "#efefef"  # Set the background color to white
+    # fig.layout.text = "num"
+    fig.layout.margin.b = 100
+    fig
+
+except IndexError:
+    st.warning("error")
