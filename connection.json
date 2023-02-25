@@ -1,9 +1,9 @@
 {
-  "account"   : "NHNAYPI.ZD38119",
-  "user"      : "SAAKETH",
-  "password"  : "Saaketh12#",
-  "role"      : "ACCOUNTADMIN",
-  "warehouse" : "COMPUTE_WH",
-  "database"  : "ROI",
-  "schema"    : "PUBLIC"
+  "account": "rn99162.us-east4.gcp",
+  "user": "saaketh",
+  "password": "Saaketh12#$",
+  "role": "ACCOUNTADMIN",
+  "warehouse": "COMPUTE_WH",
+  "database": "ROI",
+  "schema": "PUBLIC"
 }
