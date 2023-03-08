@@ -105,7 +105,6 @@ st.plotly_chart(px.pie(profit_new, names=[
                 "NSW", "QLD", "VIC"], values="past_3_years_bike_related_purchases", title="New customer data"))
 st.write("Insight - New customers are mostly in the same region as the old customers validating that the locations are targeted accurately for the buisiness")
 
-# 5. 
 st.subheader("5. Customer class & Product class sales analysis")
 st.write("5.1 Wealth segment")
 profit_job_title = pd.DataFrame(
