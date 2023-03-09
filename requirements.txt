@@ -1,0 +1,6 @@
+altair==4.2.0
+cachetools==5.2.0
+joblib==1.2.0
+pandas==1.5.1
+snowflake_connector_python==3.0.0
+streamlit==1.18.0
