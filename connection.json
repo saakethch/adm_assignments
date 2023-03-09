@@ -1,0 +1,9 @@
+{
+  "account": "pi03835.us-east-2.aws",
+  "user": "saakethch",
+  "password": "Saaketh12#",
+  "warehouse": "FE_AND_INFERENCE_WH",
+  "database": "tpcds_xgboost",
+  "schema": "demo",
+  "role": "ACCOUNTADMIN"
+}
