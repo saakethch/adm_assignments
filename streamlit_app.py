@@ -589,12 +589,9 @@ def part2():
         )
 
 
-def app():
-    with st.container():
-        st.header("TCPDS Queries")
-        part1()
-    with st.container():
-        part2()
+with st.container():
+    st.header("TCPDS Queries")
+    part1()
+with st.container():
+    part2()
 
-
-app()
