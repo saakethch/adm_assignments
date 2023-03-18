@@ -3,6 +3,12 @@
 This demo utilizes the [TPC DS sample](https://docs.snowflake.com/en/user-guide/sample-data-tpcds.html) dataset that is made available via  Snowflake share. It can be configured to run on either the 10 TB or the 100 TB version of the dataset. 
 
 This illustrates how to utilize Snowpark for feature engineering, training, and inference to answer a common question for retailers: What is the value of a customer across all sales channels? 
+### Assignment Links
+Streamlit App Link - https://saakethch-adm-assignments-streamlit-app-assignment-3-2oajcr.streamlit.app/
+
+Google Codelabs Link - https://docs.google.com/document/d/1IbjfZ1CQohdXOkDnPGc61j8QOAlqBQ_nKxuj3nHBq1E/edit#
+
+XGboost Model training Outputs - https://drive.google.com/file/d/1SbJ40ld_5FK6F9arJWrrEAsGIckkzSRe/view?usp=share_link
 
 ### Setup 
 
