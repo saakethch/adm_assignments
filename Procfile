@@ -1,1 +1,1 @@
-web: sh setup.sh && streamlit run Snowpark_Streamlit_Revenue_Prediction.py
+web: sh setup.sh && streamlit run streamlit_app_part_2.py

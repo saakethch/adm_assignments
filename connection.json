@@ -1,6 +1,6 @@
 {
-  "account": "pi03835.us-east-2.aws",
-  "user": "saakethch",
+  "account": "rn99162.us-east4.gcp",
+  "user": "saaketh",
   "password": "Saaketh12#",
   "warehouse": "FE_AND_INFERENCE_WH",
   "database": "tpcds_xgboost",
