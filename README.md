@@ -4,7 +4,7 @@ This demo utilizes the [TPC DS sample](https://docs.snowflake.com/en/user-guide/
 
 This illustrates how to utilize Snowpark for feature engineering, training, and inference to answer a common question for retailers: What is the value of a customer across all sales channels? 
 ### Assignment Links
-Streamlit App Link - https://saakethch-adm-assignments-streamlit-app-assignment-3-2oajcr.streamlit.app/
+Streamlit App Link - https://saakethch-adm-assignments-streamlit-app-assignment-3-md20ig.streamlit.app/
 
 Google Codelabs Link - https://docs.google.com/document/d/1IbjfZ1CQohdXOkDnPGc61j8QOAlqBQ_nKxuj3nHBq1E/edit#
 
