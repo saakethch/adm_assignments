@@ -14,7 +14,7 @@ from snowflake.sqlalchemy import URL
 from sqlalchemy import create_engine
 import sqlalchemy
 import plotly.express as px
-import datetime
+import os
 
 st.set_page_config(page_title="Assignment 3", layout="wide")
 APP_ICON_URL = "https://as1.ftcdn.net/v2/jpg/01/85/75/82/1000_F_185758274_tyBRRmslE10iCmSF9bRPsaZXgF7QUiLE.jpg"
@@ -465,8 +465,6 @@ def part2():
         # Add util funcs to call UDF on user input
         @cachetools.cached(cache={})
         def read_file(filename):
-            import os
-            import joblib
 
             import_dir = sys._xoptions.get("snowflake_import_directory")
             if import_dir:
