@@ -4,7 +4,7 @@ joblib==1.2.0
 numpy==1.23.4
 pandas==1.5.1
 plotly==5.13.0
-streamlit==1.18.0
-snowflake_sqlalchemy==1.4.6
 snowflake_connector_python==3.0.0
+snowflake_sqlalchemy==1.4.6
 SQLAlchemy==1.4.46
+streamlit==1.18.0

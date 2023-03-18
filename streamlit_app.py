@@ -38,8 +38,8 @@ def part1():
     tables = ["query2", "query3", "query4", "query5"]
     engine = create_engine(
         URL(
-            account="rn99162.us-east4.gcp",
-            user="saaketh",
+            account="qh69809.ca-central-1.aws",
+            user="saakethch",
             password="Saaketh12#",
             database="SNOWFLAKE_SAMPLE_DATA",
             schema="TPCDS_SF10TCL",
@@ -391,7 +391,7 @@ def part2():
 
     # Define inputs
     inputs = []
-    birth_year_range = (1960, 2020)
+    birth_year_range = (1998, 2020)
     gender_options = ["Male", "Female"]
     marital_status_options = ["Married", "Widowed", "Single", "Divorced"]
     credit_rating_options = ["Good", "High Risk", "Unknown"]
