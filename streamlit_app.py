@@ -5,7 +5,7 @@ import numpy as np
 import streamlit as st
 import sys
 import cachetools
-import joblib
+
 from snowflake.snowpark.session import Session
 from snowflake.snowpark.functions import col
 from snowflake.snowpark import types as T
@@ -15,7 +15,7 @@ from sqlalchemy import create_engine
 import sqlalchemy
 import plotly.express as px
 import os
-
+import joblib
 st.set_page_config(page_title="Assignment 3", layout="wide")
 APP_ICON_URL = "https://as1.ftcdn.net/v2/jpg/01/85/75/82/1000_F_185758274_tyBRRmslE10iCmSF9bRPsaZXgF7QUiLE.jpg"
 
