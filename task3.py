@@ -16,7 +16,7 @@ from torchvision.transforms import (
 )
 
 def task3():
-    st.title("Image Retrieval")
+    st.title("Image Search 10k")
     uploaded_file = st.file_uploader("Upload an image", type=["jpg", "jpeg", "png"],key="task_3")
     preprocess = Compose([
     Resize(256),
@@ -36,11 +36,13 @@ def task3():
         index = pinecone.Index("pinecone-image-search")
 
         query_vectors = model(preprocess(img).unsqueeze(0)).tolist()
-        responses = index.query(vector=query_vectors, top_k=4)
+        responses = index.query(vector=query_vectors, top_k=3)
         end_time = datetime.now()
         st.write('Search time: {}'.format(end_time - start_time))
         
         for res in responses["matches"]:
-            images = Image.open(f'static/img/{res["id"]}')
+            images = Image.open(f'static/img_data/{res["id"]}')
             score = res["score"]
+            print(score)
+            print("here", res["id"])
             st.image(images, caption=f"L2 Distance: {score:.2f}", use_column_width="auto")
