@@ -6,7 +6,6 @@ import streamlit as st
 import pinecone
 import torch
 import config
-
 import torchvision
 from torchvision.transforms import (
     Compose, 
@@ -18,8 +17,6 @@ from torchvision.transforms import (
 
 def task3():
     st.title("Image Retrieval")
-
-    # Upload query image
     uploaded_file = st.file_uploader("Upload an image", type=["jpg", "jpeg", "png"],key="task_3")
     preprocess = Compose([
     Resize(256),
@@ -30,25 +27,20 @@ def task3():
 
     if uploaded_file is not None:
         start_time = datetime.now()
-
-        # Save query image
-        img = Image.open(uploaded_file)  # PIL image
+        img = Image.open(uploaded_file)
         uploaded_img_path = "static/uploaded/" + datetime.now().isoformat().replace(":", "_") + uploaded_file.name
         img.save(uploaded_img_path)
-        pinecone_api_key = config.api_keys["PINECONE_API_KEY"]
-        pinecone.init(api_key=pinecone_api_key, environment="eu-west1-gcp")
-
+        pc_api_key = config.api_keys["PINECONE_API_KEY"]
+        pinecone.init(api_key=pc_api_key, environment="eu-west1-gcp")
         model = torchvision.models.squeezenet1_1(pretrained=True).eval()
-        
-        # instantiate connection to your Pinecone index
         index = pinecone.Index("pinecone-image-search")
 
         query_vectors = model(preprocess(img).unsqueeze(0)).tolist()
         responses = index.query(vector=query_vectors, top_k=4)
         end_time = datetime.now()
         st.write('Search time: {}'.format(end_time - start_time))
+        
         for res in responses["matches"]:
             images = Image.open(f'static/img/{res["id"]}')
             score = res["score"]
-            st.image(images, caption=f"Distance: {score:.2f}", use_column_width="auto")
-            
+            st.image(images, caption=f"L2 Distance: {score:.2f}", use_column_width="auto")
