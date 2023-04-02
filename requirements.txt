@@ -1,5 +1,13 @@
-altair==4.2.0
+ImageHash==4.3.1
 numpy==1.23.4
-pandas==1.5.1
-plotly==5.13.0
+openai==0.27.2
+opencv_python==4.7.0.68
+Pillow==9.5.0
+pinecone==0.1.0
+pinecone_client==2.2.1
+requests==2.28.1
 streamlit==1.18.0
+tensorflow==2.10.0
+torch==2.0.0
+torchvision==0.15.1
+
