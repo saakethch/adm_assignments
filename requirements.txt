@@ -1,7 +1,7 @@
 ImageHash==4.3.1
 numpy==1.23.4
 openai==0.27.2
-opencv_python==4.7.0.68
+opencv_python==4.6.0.66
 Pillow==9.5.0
 pinecone==0.1.0
 pinecone_client==2.2.1
