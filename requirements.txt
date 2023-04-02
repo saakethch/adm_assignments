@@ -5,8 +5,8 @@ opencv_python==4.6.0.66
 Pillow==9.5.0
 pinecone_client==2.2.1
 requests==2.28.1
-streamlit==1.18.0
-tensorflow==2.10.0
 torch==2.0.0
 torchvision==0.15.1
-protobuf==3.19.1
+streamlit==1.13.0
+tensorflow==2.10.0
+tensorboard==2.10.1
