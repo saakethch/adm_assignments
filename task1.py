@@ -3,7 +3,6 @@ import cv2
 from PIL import Image
 import requests
 from io import BytesIO
-import imagehash
 import os
 from pathlib import Path
 from feature_extractor import FeatureExtractor
