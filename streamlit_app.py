@@ -25,8 +25,7 @@ if index_name not in pinecone.list_indexes():
 index = pinecone.Index(index_name)
 
 limit = 3750
-openai.api_key = "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"
-# openai.api_key = st.secrets["OPENAI_API_KEY"]
+openai.api_key = st.secrets["OPENAI_API_KEY"]
 def retrieve(query):
     res = openai.Embedding.create(
         input=[query],
