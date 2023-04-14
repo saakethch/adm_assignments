@@ -87,5 +87,6 @@ def ask_me(prompt):
 
 # user input
 apparel_prompt = st.text_input("Enter a question related to Canon EOS R5 : ")
+st.image("images.jpeg")
 ans = ask_me(apparel_prompt)
 st.write(ans)
