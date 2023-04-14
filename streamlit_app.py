@@ -86,7 +86,6 @@ def ask_me(prompt):
     return complete(query_with_contexts)
 
 # user input
-apparel_prompt = st.text_input("Enter a question related to Apple's Mac Book Pro : ")
-if apparel_prompt.endswith("?"):
-    ans = ask_me(apparel_prompt + "in mac book")
-    st.write(ans)
+apparel_prompt = st.text_input("Enter a question related to Canon EOS R5 : ")
+ans = ask_me(apparel_prompt)
+st.write(ans)
